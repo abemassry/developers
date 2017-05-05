@@ -240,7 +240,7 @@ endpoints:
         description: >
           Registers a new OAuth client application.
         params:
-          name:
+          label:
             description: A name for the new client application.
             type: string
             limit: "1-128 characters"
@@ -253,7 +253,7 @@ endpoints:
             curl -H "Content-Type: application/json" \
                 -H "Authorization: token $TOKEN" \
                 -X POST -d '{
-                    "name": "Example app",
+                    "label": "Example app",
                     "redirect_uri": "https://oauthreturn.example.org/",
                 }' \
                 https://$api_root/$version/account/clients
