@@ -18,8 +18,7 @@ endpoints:
           curl: |
             curl https://$api_root/$version/regions
           python: |
-            import regions
-            TODO
+            all_regions = client.get_regions()
   regions/:id:
     type: resource
     resource: region
@@ -34,5 +33,4 @@ endpoints:
           curl: |
             curl https://$api_root/$version/region/$region_id
           python: |
-            import regions
-            TODO
+            region = linode.Region(client, 'us-east-1a')
