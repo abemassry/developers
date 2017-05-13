@@ -18,6 +18,8 @@ endpoints:
         examples:
           curl: |
             curl https://$api_root/$version/account/profile
+          python: |
+            my_profile = client.account.get_profile()
       PUT:
         description: >
           Edits your account profile.
@@ -36,6 +38,13 @@ endpoints:
                   }
                 }' \
                 https://$api_root/$version/account/profile
+          python: |
+            my_profile.email = 'jsmith@mycompany.com'
+            my_profile.timezone = 'US/Eastern'
+            my_profile.email_notifications = True
+            my_profile.ip_whitelist_enabled = True
+            my_profile.lish_auth_method = 'password_keys'
+            my_profile.save()
   account/profile/password:
     methods:
       POST:
@@ -49,6 +58,9 @@ endpoints:
                   "password":"hunter7"
               }' \
               https://$api_root/$version/account/profile/password
+          python: |
+            my_profile = client.account.get_profile()
+            my_profile.reset_password('hunter7')
   account/profile/tfa-enable:
     methods:
       POST:
@@ -62,6 +74,9 @@ endpoints:
               -H "Authorization: token $TOKEN" \
               -X POST \
               https://$api_root/$version/account/profile/tfa-enable
+          python: |
+            my_profile = client.account.get_profile()
+            secret = my_profile.enable_tfa()
   account/profile/tfa-enable-confirm:
     methods:
       POST:
@@ -80,6 +95,9 @@ endpoints:
                 "tfa_code": "123456"
               }' \
               https://$api_root/$version/account/profile/tfa-enable-confirm
+          python: |
+            my_profile = client.account.get_profile()
+            my_profile.confirm_tfa('123456')
   account/profile/tfa-disable:
     methods:
       POST:
@@ -91,6 +109,9 @@ endpoints:
               -H "Authorization: token $TOKEN" \
               -X POST \
               https://$api_root/$version/account/profile/tfa-disable
+          python: |
+            my_profile = client.account.get_profile()
+            my_profile.disable_tfa()
   account/profile/grants:
     methods:
       GET:
@@ -100,6 +121,9 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/profile/grants
+          python: |
+            my_profile = client.account.get_profile()
+            my_grants = my_profile.grants
   account/tokens:
     type: list
     resource: oauthtoken
@@ -115,6 +139,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/tokens
+          python: |
+            my_tokens = client.account.get_tokens()
       POST:
         oauth: tokens:create
         dangerous: true
@@ -150,6 +176,9 @@ endpoints:
                   "scopes": "linodes:view;domains:view"
                 }' \
                 https://$api_root/$version/account/tokens
+          python: |
+            from linode import OAuthScopes
+            new_token = client.account.create_personal_access_token(scopes=[OAuthScopes.Linodes.view, OAuthScopes.Domains.view])
   account/tokens/:id:
     type: resource
     resource: oauthtoken
@@ -164,6 +193,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/tokens/123
+          python: |
+            my_token = linode.OAuthToken(client, 123)
       PUT:
         oauth: tokens:modify
         description: >
@@ -176,6 +207,9 @@ endpoints:
                   "label": "test-new-label"
                 }' \
                 https://$api_root/$version/account/tokens/123
+          python: |
+            my_token.label = 'test-new-label'
+            my_token.save()
       DELETE:
         oauth: tokens:delete
         description: >
@@ -185,6 +219,8 @@ endpoints:
             curl -H "Authorization: token $TOKEN" \
                 -X DELETE \
                 https://$api_root/$version/account/tokens/123
+          python: |
+            my_token.delete()
   account/settings:
     type: resource
     resource: account
@@ -197,6 +233,8 @@ endpoints:
         examples:
           curl: |
             curl https://$api_root/$version/account/settings
+          python: |
+            my_settings = client.account.get_settings()
       PUT:
         description: >
           Edits your account settings.
@@ -220,6 +258,15 @@ endpoints:
                   }
                 }' \
                 https://$api_root/$version/account/settings
+          python: |
+            my_settings = client.account.get_settings()
+            my_settings.address_1 = '123 Main St.'
+            my_settings.address_2 = 'Suite 101'
+            my_settings.city = 'Philadelphia'
+            my_settings.company = 'My Company, LLC'
+            my_settings.country = 'US'
+            my_settings.email = 'jsmith@company.com'
+            my_settings.save()
   account/clients:
     type: list
     resource: client
@@ -235,6 +282,8 @@ endpoints:
           curl: |
             curl -H "Authorization; token $TOKEN" \
                 https://$api_root/$version/account/clients
+          python: |
+            my_clients = client.account.get_oauth_clients()
       POST:
         oauth: clients:create
         description: >
@@ -257,6 +306,8 @@ endpoints:
                     "redirect_uri": "https://oauthreturn.example.org/",
                 }' \
                 https://$api_root/$version/account/clients
+          python: |
+            new_client = client.account.create_oauth_client('Example app', 'https://oauthreturn.example.org/')
   account/clients/:id:
     type: resource
     resource: client
@@ -272,6 +323,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/clients/$client_id
+          python: |
+            my_client = linode.OAuthClient(client, 123)
       PUT:
         oauth: clients:modify
         description: >
@@ -285,6 +338,9 @@ endpoints:
                     "redirect_uri": "https://newredirect.example.org/",
                 }' \
                 https://$api_root/$version/account/clients/$client_id
+          python: |
+            my_client.name = 'Updated app name'
+            my_client.save()
       DELETE:
         oauth: clients:delete
         dangerous: true
@@ -295,6 +351,9 @@ endpoints:
             curl -H "Authorization: token $TOKEN" \
                 -X DELETE \
                 https://$api_root/$version/account/clients/$client_id
+          python: |
+            my_client = linode.OAuthClient(client, 123)
+            my_client.delete()
   account/clients/:id/reset_secret:
     type: action
     authenticated: true
@@ -310,6 +369,9 @@ endpoints:
                 -H "Authorization: token $TOKEN" \
                 -X POST \
                 https://$api_root/$version/account/clients/$client_id/reset_secret
+          python: |
+            my_client = linode.OAuthClient(client, 123)
+            new_secret = my_client.reset_secret()
   account/clients/:id/thumbnail:
     type: action
     authenticated: true
@@ -324,6 +386,11 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/clients/$client_id/thumbnail
+          python: |
+            img = my_client.get_thumbnail()
+
+            # save image to file
+            my_client.get_thumbnail('client_thumbnail.png')
       PUT:
         oauth: clients:modify
         description: >
@@ -336,6 +403,14 @@ endpoints:
                 -X PUT \
                 --data-binary "@/path/to/image"
                 https://$api_root/$version/account/clients/$client_id/thumbnail
+          python: |
+            my_client = linode.OAuthClient(client, 123)
+            my_client.set_thumbnail('/path/to/image')
+
+            # set from memory
+            with open('/path/to/image', 'rb') as f:
+                img = f.read()
+            my_client.set_thumbnail(img)
   account/users:
     type: list
     resource: account
@@ -346,6 +421,8 @@ endpoints:
         examples:
           curl: |
             curl https://$api_root/$version/account/users
+          python: |
+            my_users = client.account.get_users()
       POST:
         description: >
           Creates a new user.
@@ -373,6 +450,8 @@ endpoints:
                     "email": "testguy@linode.com"
                 }' \
                 https://$api_root/$version/account/users
+          python: |
+            # currently unimplemented
   account/users/:username:
     type: resource
     resource: account
@@ -383,6 +462,8 @@ endpoints:
         examples:
           curl: |
             curl https://$api_root/$version/account/users/$username
+          python: |
+            my_user = linode.User(client, 'username')
       PUT:
         description: >
           Update a user.
@@ -395,6 +476,10 @@ endpoints:
                   }
                 }' \
                 https://$api_root/$version/account/users/testguy
+          python: |
+            my_user = linode.User(client, 'username')
+            my_user.email = 'newemail@linode.com'
+            my_user.save()
       DELETE:
         description: >
           Deletes a user.  May not delete the last unrestricted user on the account.
@@ -403,6 +488,9 @@ endpoints:
             curl -H "Authorization: token $TOKEN" \
                 -X DELETE \
                 https://$api_root/$version/account/users/testguy
+          python: |
+            my_user = linode.User(client, 'username')
+            my_user.delete()
   account/users/:username/password:
     type: action
     description: >
@@ -421,6 +509,9 @@ endpoints:
                     "password": "hunter7",
                 }' \
                 https://$api_root/$version/account/users/testguy/password
+          python: |
+            my_user = linode.User(client, 'username')
+            my_user.change_password('hunter7')
   account/users/:username/grants:
     type: resource
     resource: usergrants
@@ -434,6 +525,12 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/users/testguy/grants
+          python: |
+            my_user = linode.User(client, 'username')
+            grants = None # unrestricted users have no grants
+
+            if my_user.restricted:
+                grants = my_user.grants
       PUT:
         description: >
           Update grants for a restricted user.
@@ -446,3 +543,9 @@ endpoints:
                     }
                 }' \
                 https://$api_root/$version/account/users/testguy/grants
+          python: |
+            my_user = linode.User(client, 'username')
+            assert my_user.restricted # we can't set grants for unrestricted users
+
+            my_user.grants.global.add_linodes = True
+            my_user.grants.save()
