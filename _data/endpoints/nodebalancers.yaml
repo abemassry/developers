@@ -20,6 +20,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/nodebalancers
+          python: |
+            my_nodebalancers = client.get_nodebalancers()
       POST:
         money: true
         oauth: nodebalancers:create
@@ -49,6 +51,8 @@ endpoints:
                     "client_conn_throttle": 10
                 }' \
                 https://$api_root/$version/nodebalancers
+          python: |
+            new_nodebalancer = client.create_nodebalancer('us-east-1a', label='my_cool_balancer', client_conn_throttle=10)
   nodebalancers/:id:
     type: resource
     resource: nodebalancer
@@ -64,6 +68,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id
+          python: |
+            my_nodebalancer = linode.NodeBalancer(client, 123)
       PUT:
         oauth: nodebalancers:modify
         description: >
@@ -78,6 +84,11 @@ endpoints:
                     "client_conn_throttle": 14
                 }' \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id
+          python: |
+            my_nodebalancer = linode.NodeBalancer(client, 123)
+            my_nodebalancer.label = 'awesome_new_label'
+            my_nodebalancer.client_conn_throttle = 14
+            my_nodebalancer.save()
       DELETE:
        oauth: nodebalancers:delete
        dangerous: true
@@ -88,6 +99,9 @@ endpoints:
            curl -H "Authorization: token $TOKEN" \
                -X DELETE \
                https://$api_root/$version/nodebalancers/$nodebalancer_id
+         python: |
+           my_nodebalancer = linode.NodeBalancer(client, 123)
+           my_nodebalancer.delete()
   nodebalancers/:id/configs:
     type: list
     resource: nodebalancer_config
@@ -104,6 +118,9 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs
+          python: |
+            my_nodebalancer = linode.NodeBalancer(client, 123)
+            nb_configs = my_nodebalancer.configs
       POST:
         oauth: nodebalancers:create
         description: >
@@ -160,7 +177,13 @@ endpoints:
                     "check_body": "we got some stuff back",
                     "cipher_suite": "legacy"
                 }' \
-                https://$api_root/$version/nodebalancers
+                https://$api_root/$version/nodebalancers/$nodebalancer_id/configs
+          python: |
+            my_nodebalancer = linode.NodeBalancer(client, 123)
+            new_config = my_nodebalancer.create_config(port=80, label='myNodeBalancerConfig', protocol='http',
+                    algorithm='roundrobin', stickiness='none', check='http_body', check_interval=5, check_timeout=3,
+                    check_attempts=10, check_path='/path/to/check', check_body='we got some stuff back',
+                    cipher_suite='legacy')
   nodebalancers/:id/configs/:id:
     type: resource
     authenticated: true
@@ -175,6 +198,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id
+          python: |
+            nb_config = linode.NodeBalancerConfig(client, 456, 123) # linode_client, nodebalancer_config_id, nodebalancer_id
       DELETE:
         oauth: nodebalancers:modify
         description: >
@@ -185,6 +210,9 @@ endpoints:
             curl -H "Authorization: token $TOKEN" \
                 -X DELETE \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id
+          python: |
+            nb_config = linode.NodeBalancerConfig(client, 456, 123) # linode_client, nodebalancer_config_id, nodebalancer_id
+            nb_config.delete()
   nodebalancers/:id/configs/:id/ssl:
     type: resource
     authenticated: true
@@ -203,6 +231,8 @@ endpoints:
                   "ssl_key": "----- BEGIN PRIVATE KEY ----- < etc...> ----- END PRIVATE KEY -----"
                 }' \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/ssl
+          python: |
+            # currently unimplemented
   nodebalancers/:id/configs/:id/nodes:
     type: list
     resource: nodebalancer_config_nodes
@@ -219,6 +249,10 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/nodes
+          python: |
+            my_nodebalancer = linode.NodeBalancer(client, 123)
+            nb_config = my_nodebalancer.configs[0]
+            nb_nodes = nb_config.nodes
       POST:
         oauth: nodebalancers:create
         description: Creates a new NodeBalancer config node.
@@ -242,10 +276,13 @@ endpoints:
                   "address": "192.168.4.5:80",
                   "weight": 40,
                   "mode": "accept",
-                  "status": "online"
               }' \
               https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/nodes
   nodebalancers/:id/configs/:id/nodes/:id:
+          python: |
+            my_nodebalancer = linode.NodeBalancer(client, 123)
+            nb_config = my_nodebalancer.configs[0]
+            new_node = nb_config.create_node('greatest_node_evet', '192.168.4.5:80', weight=40, mode='accept')
     type: resource
     authenticated: true
     description: >
@@ -259,6 +296,8 @@ endpoints:
           curl: |
             curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/nodes/$node_id
+          python: |
+            nb_node = linode.NodeBalancerNode(client, 789, 456, 123) # linode_client, node_id, config_id, nodebalancer_id
       PUT:
         oauth: nodebalancers:modify
         description: >
@@ -272,9 +311,13 @@ endpoints:
                   "address": "192.168.12.12:100",
                   "weight": 40,
                   "mode": "accept",
-                  "status": "online"
               }' \
               https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/nodes/$node_id
+          python: |
+            nb_node = linode.NodeBalancerNode(client, 789, 456, 123) # linode_client, node_id, config_id, nodebalancer_id
+            nb_node.label = 'node001'
+            nb_node.address = '192.168.12.12:100'
+            nb_node.save()
       DELETE:
         oauth: nodebalancers:modify
         description: >
@@ -285,3 +328,6 @@ endpoints:
             curl -H "Authorization: token $TOKEN" \
                 -X DELETE \
                 https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/nodes/$node_id
+          python: |
+            nb_node = linode.NodeBalancerNode(client, 789, 456, 123) # linode_client, node_id, config_id, nodebalancer_id
+            nb_node.delete()
