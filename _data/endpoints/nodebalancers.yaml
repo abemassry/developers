@@ -265,8 +265,6 @@ endpoints:
             description: Load balancing weight, 1-255. Higher means more connections.
           mode:
             description: The connections mode for this node. One of 'accept', 'reject', or 'drain'.
-          status:
-            description: The status of this node.
         examples:
           curl: |
             curl -H "Content-Type: application/json" \
@@ -275,14 +273,10 @@ endpoints:
                   "label": "greatest_node_ever",
                   "address": "192.168.4.5:80",
                   "weight": 40,
-                  "mode": "accept",
+                  "mode": "accept"
               }' \
               https://$api_root/$version/nodebalancers/$nodebalancer_id/configs/$config_id/nodes
   nodebalancers/:id/configs/:id/nodes/:id:
-          python: |
-            my_nodebalancer = linode.NodeBalancer(client, 123)
-            nb_config = my_nodebalancer.configs[0]
-            new_node = nb_config.create_node('greatest_node_evet', '192.168.4.5:80', weight=40, mode='accept')
     type: resource
     authenticated: true
     description: >
