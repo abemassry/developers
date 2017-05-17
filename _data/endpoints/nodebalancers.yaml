@@ -220,7 +220,7 @@ endpoints:
       Add or update SSL certificate and https protocol to an existing config profile.
     methods:
       POST:
-        oauth: nodebaalancers:modify
+        oauth: nodebalancers:modify
         description: Adds/updates SSL certificates
         examples:
           curl: |
