@@ -280,7 +280,7 @@ endpoints:
           Returns a list of <a href="#object-client">clients</a>.
         examples:
           curl: |
-            curl -H "Authorization; token $TOKEN" \
+            curl -H "Authorization: token $TOKEN" \
                 https://$api_root/$version/account/clients
           python: |
             my_clients = client.account.get_oauth_clients()
